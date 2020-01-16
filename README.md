@@ -54,7 +54,7 @@ To run the Litmus ChaosEngine experiments:
 ./manage.py test
 ```
 
-## Shuttdown
+## Shutdown
 
 To shutdown and destroy the GKE cluster when you're finished:
 
