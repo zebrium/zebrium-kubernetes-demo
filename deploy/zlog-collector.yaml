@@ -1,0 +1,137 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zlog-collector
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: zlog-collector
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - deployments
+  - pods
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: zlog-collector
+roleRef:
+  kind: ClusterRole
+  name: zlog-collector
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: zlog-collector
+  namespace: default
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: zlog-collector
+spec:
+  selector:
+    matchLabels:
+      app: zlog-collector
+  template:
+    metadata:
+      labels:
+        app: zlog-collector
+        zebrium.com/exclude: ""
+    spec:
+      serviceAccountName: zlog-collector
+      containers:
+      - name: zlog-collector
+        image: zebrium/zlog-collector:latest
+        imagePullPolicy: Always
+        env:
+        - name: ZE_LOG_COLLECTOR_URL
+          valueFrom:
+            secretKeyRef:
+              name: zlog-collector-config
+              key: log-collector-url
+        - name: ZE_LOG_COLLECTOR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: zlog-collector-config
+              key: auth-token
+        - name: ZE_DEPLOYMENT_NAME
+          value: "zebrium-k8s-demo"
+        - name: EXCLUDE_POD_REGEX
+          value: ""
+        - name: TAIL_FROM_HEAD
+          value: "true"
+        - name: FLUENTD_LOG_FILE
+          value: ""
+        - name: ZE_LOG_LEVEL
+          value: "info"
+        - name: NODE_LOGS_PATH
+          value: "/var/log/*.log,/var/log/syslog,/var/log/messages,/var/log/secure"
+        - name: EXCLUDE_PATH
+          value: "[\"/var/log/boot.log\",\"/var/log/lastlog\"]"
+        - name: FLUSH_INTERVAL
+          value: "30s"
+        - name: VERIFY_SSL
+          value: "true"
+        resources:
+          requests:
+            cpu: 20m
+            memory: 500Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        volumeMounts:
+        - name: host-var-logs
+          mountPath: /var/log/
+          readOnly: true
+        - name: host-run-log
+          mountPath: /run/log/
+          readOnly: true
+        - name: host-var-lib-docker
+          mountPath: /var/lib/docker/
+          readOnly: true
+        - name: host-var-cache
+          mountPath: /mnt/var/cache/
+        - name: host-etc-osrelease
+          mountPath: /mnt/etc/os-release
+          readOnly: true
+        - name: host-etc-hostname
+          mountPath: /mnt/etc/hostname
+          readOnly: true
+        - name: host-etc-localtime
+          mountPath: /etc/localtime
+          readOnly: true
+      volumes:
+      - name: host-var-logs
+        hostPath:
+          path: /var/log
+      - name: host-run-log
+        hostPath:
+          path: /run/log
+      - name: host-var-cache
+        hostPath:
+          path: /var/cache
+      - name: host-var-lib-docker
+        hostPath:
+          path: /var/lib/docker
+      - name: host-etc-osrelease
+        hostPath:
+          path: /etc/os-release
+      - name: host-etc-hostname
+        hostPath:
+          path: /etc/hostname
+      - name: host-etc-localtime
+        hostPath:
+          path: /etc/localtime
