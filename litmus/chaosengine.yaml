@@ -6,7 +6,7 @@ metadata:
 spec:
   # It can be app/infra
   chaosType: 'app'
-  #ex. values: ns1:name=percona,ns2:run=nginx
+  #ex. values: sock-shop:name=carts
   auxiliaryAppInfo: ""
   components:
     runner:
@@ -14,11 +14,12 @@ spec:
       type: "go"
   # It can be delete/retain
   jobCleanUpPolicy: delete
-  monitoring: true
+  monitoring: false
   appinfo:
     appns: sock-shop
     # FYI, To see app label, apply kubectl get pods --show-labels
-    applabel: "app=sock-shop"
+    # unique-label of the application under test (AUT)
+    applabel: "name=carts-db"
     appkind: deployment
   chaosServiceAccount: sock-shop-chaos-engine
   experiments:

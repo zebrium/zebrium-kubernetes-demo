@@ -54,6 +54,35 @@ To run the Litmus ChaosEngine experiments:
 ./manage.py test
 ```
 
+### Notes
+
+- To view application deployment picked, success/failure of reconcile operations (i.e., creation of chaos-runner pod or lack thereof), check
+the chaos operator logs. Ex:
+
+```bash
+kubectl logs -f chaos-operator-ce-6899bbdb9-jz6jv -n litmus  
+```
+
+- To view the parameters with which the experiment job is created, status of experiment, success of chaosengine patch operation and cleanup of 
+the experiment pod, check the logs of the chaos-runner pod. Ex:
+
+```bash
+kubectl logs sock-chaos-runner -n sock-shop
+```
+
+- To view the logs of the chaos experiment itself, use the value `retain` in `.spec.jobCleanupPolicy` of the chaosengine CR
+
+```bash
+kubectl logs container-kill-1oo8wv-85lsl -n sock-shop
+```
+
+- To re-run the chaosexperiment, cleanup and re-create the chaosengine CR
+
+```bash
+kubectl delete chaosengine sock-chaos -n sock-shop
+kubectl apply -f litmus/chaosengine.yaml 
+```
+
 ## Shutdown
 
 To shutdown and destroy the GKE cluster when you're finished:

@@ -3,6 +3,7 @@
 import argparse
 import os
 import json
+import subprocess
 
 if __name__ == "__main__":
 
@@ -41,16 +42,20 @@ if __name__ == "__main__":
         os.system(f"kubectl get nodes")
 
         # Deploy Zebrium Collector
-        os.system(f"kubectl create secret generic zlog-collector-config --from-literal=log-collector-url=https://zapi03.zebrium.com --from-literal=auth-token={args.key}")
-        os.system("kubectl create -f ./deploy/zlog-collector.yaml")
+        #os.system(f"kubectl create secret generic zlog-collector-config --from-literal=log-collector-url=https://zapi03.zebrium.com --from-literal=auth-token={args.key}")
+        #os.system("kubectl create -f ./deploy/zlog-collector.yaml")
 
         # Deploy all demo apps
         os.system("kubectl create -f ./deploy/sock-shop.yaml")
         #os.system("kubectl create -f ./deploy/random-log-counter.yaml")
 
-        # Deploy Litmus ChaosEngine to run Experiments that create incidents
+        # Deploy Litmus ChaosOperator to run Experiments that create incidents
         os.system("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
-        os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml")
+
+        # Install the container-kill experiment CR
+        os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/container-kill/experiment.yaml -n sock-shop")
+
+        # Create the chaos serviceaccount with permissions needed to run the container-kill experiment
         os.system("kubectl create -f ./litmus/rbac.yaml")
 
         # Get ingress IP address
@@ -82,8 +87,15 @@ if __name__ == "__main__":
         print("Starting Litmus ChaosEngine Experiments...")
         # Deploy experiments
         os.system("kubectl create -f ./litmus/chaosengine.yaml")
+
+        # Check status of experiment execution 
+        expStatusCmd = "kubectl get chaosengine sock-chaos -o jsonpath='{.status.experiments[0].status}' -n sock-shop"
+        while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
+        	print("wait till the experiment execution is completed")
+        	os.system("sleep 10")
+
         # View experiment results
-        print("kubectl describe chaosresult sock-chaos-container-delete -n sock-shop")
-        os.system("kubectl describe chaosresult sock-chaos-container-delete -n sock-shop")
+        print("kubectl describe chaosresult sock-chaos-container-kill -n sock-shop")
+        os.system("kubectl describe chaosresult sock-chaos-container-kill -n sock-shop")
     else:
         print(f"The commnad '{args.cmd}' is not recognised. Supported commands are 'start' and 'stop'.")
