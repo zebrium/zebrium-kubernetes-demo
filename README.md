@@ -88,5 +88,5 @@ kubectl apply -f litmus/chaosengine.yaml
 To shutdown and destroy the GKE cluster when you're finished:
 
 ```bash
-./manage.py stop
+./manage.py stop --project {GC_PROJECT}
 ```

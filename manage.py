@@ -42,8 +42,8 @@ if __name__ == "__main__":
         os.system(f"kubectl get nodes")
 
         # Deploy Zebrium Collector
-        #os.system(f"kubectl create secret generic zlog-collector-config --from-literal=log-collector-url=https://zapi03.zebrium.com --from-literal=auth-token={args.key}")
-        #os.system("kubectl create -f ./deploy/zlog-collector.yaml")
+        os.system(f"kubectl create secret generic zlog-collector-config --from-literal=log-collector-url=https://zapi03.zebrium.com --from-literal=auth-token={args.key}")
+        os.system("kubectl create -f ./deploy/zlog-collector.yaml")
 
         # Deploy all demo apps
         os.system("kubectl create -f ./deploy/sock-shop.yaml")
@@ -85,17 +85,19 @@ if __name__ == "__main__":
     elif args.cmd == "test":
 
         print("Starting Litmus ChaosEngine Experiments...")
-        # Deploy experiments
+        # Redeploy experiments
+        os.system("kubectl delete chaosengine sock-chaos -n sock-shop")
         os.system("kubectl create -f ./litmus/chaosengine.yaml")
 
-        # Check status of experiment execution 
+        # Check status of experiment execution
+        print("Running experiments...")
         expStatusCmd = "kubectl get chaosengine sock-chaos -o jsonpath='{.status.experiments[0].status}' -n sock-shop"
         while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
-        	print("wait till the experiment execution is completed")
+        	print(".")
         	os.system("sleep 10")
 
         # View experiment results
-        print("kubectl describe chaosresult sock-chaos-container-kill -n sock-shop")
+        print("\nkubectl describe chaosresult sock-chaos-container-kill -n sock-shop")
         os.system("kubectl describe chaosresult sock-chaos-container-kill -n sock-shop")
     else:
         print(f"The commnad '{args.cmd}' is not recognised. Supported commands are 'start' and 'stop'.")
