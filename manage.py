@@ -52,10 +52,10 @@ if __name__ == "__main__":
         # Deploy Litmus ChaosOperator to run Experiments that create incidents
         os.system("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
 
-        # Install the container-kill experiment CR
-        os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/container-kill/experiment.yaml -n sock-shop")
+        # Install the generic K8s experiments CR
+        os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
 
-        # Create the chaos serviceaccount with permissions needed to run the container-kill experiment
+        # Create the chaos serviceaccount with permissions needed to run the generic K8s experiments
         os.system("kubectl create -f ./litmus/rbac.yaml")
 
         # Get ingress IP address
