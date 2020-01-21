@@ -87,7 +87,7 @@ if __name__ == "__main__":
         print("Starting Litmus ChaosEngine Experiments...")
         # Redeploy experiments
         os.system("kubectl delete chaosengine sock-chaos -n sock-shop")
-        os.system("kubectl create -f ./litmus/chaosengine.yaml")
+        os.system("kubectl create -f ./litmus/container-kill.yaml")
 
         # Check status of experiment execution
         print("Running experiments...")
