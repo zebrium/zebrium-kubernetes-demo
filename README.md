@@ -50,10 +50,18 @@ To start the GKE cluster and deploy all the required components:
 
 ## Test
 
-To run the Litmus ChaosEngine experiments:
+To run all the Litmus ChaosEngine experiments:
 
 ```bash
 ./manage.py test
+```
+You can optionaly add the `--wait=` argument to change the wait time between experiments in minutes. By default
+it is 20 minutes to ensure Zebrium doesn't cluster incidents together into a single incident.
+
+To run a specific experiment (found under the ./litmus directory):
+
+```bash
+./manage.py test --test=container-kill
 ```
 
 ### Notes

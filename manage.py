@@ -5,6 +5,7 @@ import os
 import json
 import sys
 import time
+from datetime import datetime
 import subprocess
 
 # Subcommand options
@@ -82,7 +83,7 @@ def run_experiment(experiment: str):
     :param experiment:  The name of the experiment as defined in the YAML, i.e. container-kill
     """
     print("***************************************************************************************************")
-    print(f"* Experiment: {experiment}")
+    print(f"* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Experiment: {experiment}")
     print("***************************************************************************************************")
 
     experiment_file = experiment + ".yaml"
@@ -92,7 +93,7 @@ def run_experiment(experiment: str):
     os.system(f"kubectl create -f ./litmus/{experiment_file}")
 
     # Check status of experiment execution
-    print("Running experiment...")
+    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
     expStatusCmd = "kubectl get chaosengine sock-chaos -o jsonpath='{.status.experiments[0].status}' -n sock-shop"
     while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
         print(".")
@@ -117,7 +118,7 @@ def test(args):
         print(f"Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...")
         for experiment_file in experiments:
             run_experiment(experiment_file.replace('.yaml', ''))
-            print(f"Waiting {args.wait} mins before running next experiment...")
+            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Waiting {args.wait} mins before running next experiment...")
             time.sleep(args.wait * 60)
     else:
         # Check experiment exists
