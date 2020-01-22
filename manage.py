@@ -122,10 +122,11 @@ def test(args):
             time.sleep(args.wait * 60)
     else:
         # Check experiment exists
-        if args.test in experiments:
+        experiment_file = args.test + ".yaml"
+        if experiment_file in experiments:
             run_experiment(args.test)
         else:
-            print(f"ERROR: {args.test}.yaml not found in ./litmus directory. Please check the name and try again.")
+            print(f"ERROR: {experiment_file} not found in ./litmus directory. Please check the name and try again.")
             sys.exit(2)
 
 if __name__ == "__main__":
