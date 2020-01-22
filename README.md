@@ -64,6 +64,17 @@ To run a specific experiment (found under the ./litmus directory):
 ./manage.py test --test=container-kill
 ```
 
+### Available Experiments
+
+1. **container-kill**: https://docs.litmuschaos.io/docs/container-kill
+1. **cpu-hog**: https://docs.litmuschaos.io/docs/cpu-hog
+1. **disk-fill**: https://docs.litmuschaos.io/docs/disk-fill
+1. **pod-cpu-hog**: https://docs.litmuschaos.io/docs/pod-cpu-hog
+1. **pod_delete**: https://docs.litmuschaos.io/docs/pod-delete
+1. **pod-network-corruption**: https://docs.litmuschaos.io/docs/pod-network-corruption
+1. **pod-network-latency**: https://docs.litmuschaos.io/docs/pod-network-latency
+1. **pod-network-loss**: https://docs.litmuschaos.io/docs/pod-network-loss
+
 ### Notes
 
 - To view application deployment picked, success/failure of reconcile operations (i.e., creation of chaos-runner pod or lack thereof), check
