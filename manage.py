@@ -3,101 +3,165 @@
 import argparse
 import os
 import json
+import sys
+import time
 import subprocess
+
+# Subcommand options
+
+def start(args):
+    """
+    Start a GKE Cluster with Zebrium's demo environment deployed.
+    """
+    print(f"Starting GKE cluster in project {args.project} with name {args.name} in zone {args.zone}")
+
+    # Ensure GCloud SDK is up to date
+    os.system("gcloud components update")
+
+    # Set GCloud project
+    os.system(f"gcloud config set project \"{args.project}\"")
+
+    # Spinup cluster
+    os.system(f"gcloud container clusters create {args.name} --zone {args.zone}")
+
+    # Get kubectl credentials
+    os.system(f"gcloud container clusters get-credentials {args.name} --zone {args.zone}")
+
+    print("\nGKE Cluster Running with following nodes:\n")
+    os.system(f"kubectl get nodes")
+
+    # Deploy Zebrium Collector
+    os.system(f"kubectl create secret generic zlog-collector-config --from-literal=log-collector-url=https://zapi03.zebrium.com --from-literal=auth-token={args.key}")
+    os.system("kubectl create -f ./deploy/zlog-collector.yaml")
+
+    # Deploy all demo apps
+    os.system("kubectl create -f ./deploy/sock-shop.yaml")
+    # os.system("kubectl create -f ./deploy/random-log-counter.yaml")
+
+    # Deploy Litmus ChaosOperator to run Experiments that create incidents
+    os.system("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
+
+    # Install the generic K8s experiments CR
+    os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
+
+    # Create the chaos serviceaccount with permissions needed to run the generic K8s experiments
+    os.system("kubectl create -f ./deploy/litmus-rbac.yaml")
+
+    # Get ingress IP address
+    print("\nIngress Details:\n")
+    os.system("kubectl get ingress basic-ingress --namespace=sock-shop")
+
+    try:
+        ingress_ip = \
+        json.loads(os.popen('kubectl get ingress basic-ingress --namespace=sock-shop -o json').read())["status"][
+            "loadBalancer"]["ingress"][0]["ip"]
+        print(f"\nYou can access the web application in a few minutes at: http://{ingress_ip}")
+    except:
+        print("Ingress still being setup. Use the following command to get the IP later:")
+        print("\tkubectl get ingress basic-ingress --namespace=sock-shop")
+
+    print("\nFinished creating cluster. Please wait a few minutes for environment to become fully initalised.")
+    print("The ingress to access the web application from your browser can take at least 5 minutes to create.")
+
+def stop(args):
+    """
+    Shutdown the GKE Cluster with Zebrium's demo environment deployed.
+    """
+    print(f"Stopping GKE cluster in project {args.project} with name {args.name} in zone {args.zone}")
+
+    # Set GCloud project
+    os.system(f"gcloud config set project \"{args.project}\"")
+
+    # Stop cluster
+    os.system(f"gcloud container clusters delete {args.name} --zone {args.zone}")
+
+def run_experiment(experiment: str):
+    """
+    Run a specific experiment
+
+    :param experiment:  The name of the experiment as defined in the YAML, i.e. container-kill
+    """
+    print("***************************************************************************************************")
+    print(f"* Experiment: {experiment}")
+    print("***************************************************************************************************")
+
+    experiment_file = experiment + ".yaml"
+    print(f"Running Litmus ChaosEngine Experiment {experiment_file}")
+    print(f"Deploying {experiment_file}...")
+    os.system("kubectl delete chaosengine sock-chaos -n sock-shop")
+    os.system(f"kubectl create -f ./litmus/{experiment_file}")
+
+    # Check status of experiment execution
+    print("Running experiment...")
+    expStatusCmd = "kubectl get chaosengine sock-chaos -o jsonpath='{.status.experiments[0].status}' -n sock-shop"
+    while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
+        print(".")
+        os.system("sleep 10")
+
+    # View experiment results
+    print(f"\nkubectl describe chaosresult sock-chaos-{experiment} -n sock-shop")
+    os.system(f"kubectl describe chaosresult sock-chaos-{experiment} -n sock-shop")
+
+def test(args):
+    """
+    Run Litmus ChaosEngine Experiments inside Zebrium's demo environment.
+    Each experiment is defined under its own yaml file under the /litmus directory. You can run
+    a specific experiment by specifying a test name that matches one of the yaml file names in the directory
+    but by default all '*' experiments will be run with 20 minute wait period between each experiment
+    to ensure Zebrium doesn't cluster the incidents together into one incident
+    """
+    experiments = os.listdir('./litmus')
+
+    if args.test == '*':
+        # Run all experiments in /litmus directory with wait time between them
+        print(f"Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...")
+        for experiment_file in experiments:
+            run_experiment(experiment_file.replace('.yaml', ''))
+            print(f"Waiting {args.wait} mins before running next experiment...")
+            time.sleep(args.wait * 60)
+    else:
+        # Check experiment exists
+        if args.test in experiments:
+            run_experiment(args.test)
+        else:
+            print(f"ERROR: {args.test}.yaml not found in ./litmus directory. Please check the name and try again.")
+            sys.exit(2)
 
 if __name__ == "__main__":
 
     # Add command line arguments
     parser = argparse.ArgumentParser(description='Spin up Zebrium Demo Environment on Kubernetes.')
+    subparsers = parser.add_subparsers()
 
-    parser.add_argument("cmd", help="'start', 'test' or 'stop' the GKE cluster")
-    parser.add_argument("-p", "--project", type=str,
+    # Start command
+    parser_start = subparsers.add_parser("start", help="Start a GKE Cluster with Zebrium's demo environment deployed.")
+    parser_start.add_argument("-p", "--project", type=str,
                         help="Set GCloud Project to spin GKE cluster up in")
-    parser.add_argument("-z", "--zone", type=str, default="us-central1-a",
+    parser_start.add_argument("-z", "--zone", type=str, default="us-central1-a",
                         help="Set GCloud Zone to spin GKE cluster up in")
-    parser.add_argument("-n", "--name", type=str, default="zebrium-demo-gke",
+    parser_start.add_argument("-n", "--name", type=str, default="zebrium-demo-gke",
                         help="Set GKE cluster name")
-    parser.add_argument("-k", "--key", type=str,
+    parser_start.add_argument("-k", "--key", type=str,
                         help="Set Zebrium collector key for demo account")
+    parser_start.set_defaults(func=start)
+
+    # Test command
+    parser_test = subparsers.add_parser("test", help="Run Litmus ChaosEngine Experiments inside Zebrium's demo environment.")
+    parser_test.add_argument("-t", "--test", type=str, default="*",
+                             help="Name of test to run based on yaml file name under /litmus folder. '*' runs all of them with wait time between each experiement.")
+    parser_test.add_argument("-w", "--wait", type=int, default=20,
+                             help="Number of minutes to wait between experiments. Defaults to 20 mins to avoid Zebrium clustering incidents together.")
+    parser_test.set_defaults(func=test)
+
+    # Stop command
+    parser_stop = subparsers.add_parser("stop", help="Shutdown the GKE Cluster with Zebrium's demo environment deployed.")
+    parser_stop.add_argument("-p", "--project", type=str,
+                        help="Set GCloud Project to spin GKE cluster up in")
+    parser_stop.add_argument("-z", "--zone", type=str, default="us-central1-a",
+                        help="Set GCloud Zone to spin GKE cluster up in")
+    parser_stop.add_argument("-n", "--name", type=str, default="zebrium-demo-gke",
+                        help="Set GKE cluster name")
+    parser_stop.set_defaults(func=stop)
+
     args = parser.parse_args()
-
-
-    if args.cmd == "start":
-
-        print(f"Starting GKE cluster in project {args.project} with name {args.name} in zone {args.zone}")
-
-        # Ensure GCloud SDK is up to date
-        os.system("gcloud components update")
-
-        # Set GCloud project
-        os.system(f"gcloud config set project \"{args.project}\"")
-
-        # Spinup cluster
-        os.system(f"gcloud container clusters create {args.name} --zone {args.zone}")
-
-        # Get kubectl credentials
-        os.system(f"gcloud container clusters get-credentials {args.name} --zone {args.zone}")
-
-        print("\nGKE Cluster Running with following nodes:\n")
-        os.system(f"kubectl get nodes")
-
-        # Deploy Zebrium Collector
-        os.system(f"kubectl create secret generic zlog-collector-config --from-literal=log-collector-url=https://zapi03.zebrium.com --from-literal=auth-token={args.key}")
-        os.system("kubectl create -f ./deploy/zlog-collector.yaml")
-
-        # Deploy all demo apps
-        os.system("kubectl create -f ./deploy/sock-shop.yaml")
-        #os.system("kubectl create -f ./deploy/random-log-counter.yaml")
-
-        # Deploy Litmus ChaosOperator to run Experiments that create incidents
-        os.system("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
-
-        # Install the generic K8s experiments CR
-        os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
-
-        # Create the chaos serviceaccount with permissions needed to run the generic K8s experiments
-        os.system("kubectl create -f ./litmus/rbac.yaml")
-
-        # Get ingress IP address
-        print("\nIngress Details:\n")
-        os.system("kubectl get ingress basic-ingress --namespace=sock-shop")
-
-        try:
-            ingress_ip = json.loads(os.popen('kubectl get ingress basic-ingress --namespace=sock-shop -o json').read())["status"]["loadBalancer"]["ingress"][0]["ip"]
-            print(f"\nYou can access the web application in a few minutes at: http://{ingress_ip}")
-        except:
-            print("Ingress still being setup. Use the following command to get the IP later:")
-            print("\tkubectl get ingress basic-ingress --namespace=sock-shop")
-
-        print("\nFinished creating cluster. Please wait a few minutes for environment to become fully initalised.")
-        print("The ingress to access the web application from your browser can take at least 5 minutes to create.")
-
-    elif args.cmd == "stop":
-
-        print(f"Stopping GKE cluster in project {args.project} with name {args.name} in zone {args.zone}")
-
-        # Set GCloud project
-        os.system(f"gcloud config set project \"{args.project}\"")
-
-        # Stop cluster
-        os.system(f"gcloud container clusters delete {args.name} --zone {args.zone}")
-
-    elif args.cmd == "test":
-
-        print("Starting Litmus ChaosEngine Experiments...")
-        # Redeploy experiments
-        os.system("kubectl delete chaosengine sock-chaos -n sock-shop")
-        os.system("kubectl create -f ./litmus/container-kill.yaml")
-
-        # Check status of experiment execution
-        print("Running experiments...")
-        expStatusCmd = "kubectl get chaosengine sock-chaos -o jsonpath='{.status.experiments[0].status}' -n sock-shop"
-        while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
-        	print(".")
-        	os.system("sleep 10")
-
-        # View experiment results
-        print("\nkubectl describe chaosresult sock-chaos-container-kill -n sock-shop")
-        os.system("kubectl describe chaosresult sock-chaos-container-kill -n sock-shop")
-    else:
-        print(f"The commnad '{args.cmd}' is not recognised. Supported commands are 'start' and 'stop'.")
+    args.func(args)

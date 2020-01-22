@@ -14,7 +14,7 @@ spec:
       type: "go"
   # It can be delete/retain
   jobCleanUpPolicy: delete
-  monitoring: false
+  monitoring: true
   appinfo:
     appns: sock-shop
     # FYI, To see app label, apply kubectl get pods --show-labels
@@ -23,8 +23,11 @@ spec:
     appkind: deployment
   chaosServiceAccount: sock-shop-chaos-engine
   experiments:
-    - name: container-kill
+    - name: disk-fill
       spec:
         components:
-        - name: TARGET_CONTAINER
-          value: carts-db
+           # specify the fill percentage according to the disk pressure required
+          - name: FILL_PERCENTAGE
+            value: "80"
+          - name: TARGET_CONTAINER
+            value: "cards-db"

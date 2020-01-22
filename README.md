@@ -26,16 +26,18 @@ To see full command line options use the `-h` flag:
 This will output the following:
 
 ```bash
-positional arguments:
-  cmd                   'start', 'test' or 'stop' the GKE cluster
+usage: manage.py [-h] {start,test,stop} ...
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -p PROJECT, --project PROJECT
-                        Set GCloud Project to spin GKE cluster up in
-  -z ZONE, --zone ZONE  Set GCloud Zone to spin GKE cluster up in
-  -n NAME, --name NAME  Set GKE cluster name
-  -k KEY, --key KEY     Set Zebrium collector key for demo account
+Spin up Zebrium Demo Environment on Kubernetes.
+
+positional arguments:
+  {start,test,stop}
+    start            Start a GKE Cluster with Zebrium's demo environment
+                     deployed.
+    test             Run Litmus ChaosEngine Experiments inside Zebrium's demo
+                     environment.
+    stop             Shutdown the GKE Cluster with Zebrium's demo environment
+                     deployed.
 ```
 
 ## Startup
