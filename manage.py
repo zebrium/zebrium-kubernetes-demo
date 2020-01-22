@@ -76,11 +76,22 @@ def stop(args):
     # Stop cluster
     os.system(f"gcloud container clusters delete {args.name} --zone {args.zone}")
 
+class ExperimentResult(object):
+    """
+    Holds Experiment Result
+    """
+
+    def __init__(self, name:str, status:str, startTime:datetime):
+        self.name = name
+        self.status = status
+        self.startTime = startTime
+
 def run_experiment(experiment: str):
     """
     Run a specific experiment
 
     :param experiment:  The name of the experiment as defined in the YAML, i.e. container-kill
+    :return:            ExperimentResult object with results of experiment
     """
     print("***************************************************************************************************")
     print(f"* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Experiment: {experiment}")
@@ -93,7 +104,8 @@ def run_experiment(experiment: str):
     os.system(f"kubectl create -f ./litmus/{experiment_file}")
 
     # Check status of experiment execution
-    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
+    startTime = datetime.now()
+    print(f"{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
     expStatusCmd = "kubectl get chaosengine sock-chaos -o jsonpath='{.status.experiments[0].status}' -n sock-shop"
     while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
         print(".")
@@ -102,6 +114,10 @@ def run_experiment(experiment: str):
     # View experiment results
     print(f"\nkubectl describe chaosresult sock-chaos-{experiment} -n sock-shop")
     os.system(f"kubectl describe chaosresult sock-chaos-{experiment} -n sock-shop")
+
+    # Store Experiment Result
+    status = subprocess.check_output("kubectl get chaosresult sock-chaos-" + experiment + " -n sock-shop -o jsonpath='{.spec.experimentstatus.verdict}'", shell=True).decode('unicode-escape')
+    return ExperimentResult(experiment, status, startTime)
 
 def test(args):
     """
@@ -112,22 +128,38 @@ def test(args):
     to ensure Zebrium doesn't cluster the incidents together into one incident
     """
     experiments = os.listdir('./litmus')
+    experiment_results = []
 
     if args.test == '*':
         # Run all experiments in /litmus directory with wait time between them
         print(f"Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...")
         for experiment_file in experiments:
-            run_experiment(experiment_file.replace('.yaml', ''))
+            result = run_experiment(experiment_file.replace('.yaml', ''))
+            experiment_results.append(result)
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Waiting {args.wait} mins before running next experiment...")
             time.sleep(args.wait * 60)
     else:
         # Check experiment exists
         experiment_file = args.test + ".yaml"
         if experiment_file in experiments:
-            run_experiment(args.test)
+            result = run_experiment(args.test)
+            experiment_results.append(result)
         else:
             print(f"ERROR: {experiment_file} not found in ./litmus directory. Please check the name and try again.")
             sys.exit(2)
+
+    # Print out experiment result summary
+    print("***************************************************************************************************")
+    print(f"* Experiments Result Summary")
+    print("***************************************************************************************************\n")
+    headers = ["#", "Start Time", "Experiment", "Status"]
+    row_format = "{:>20}" * (len(headers) + 1)
+    print(row_format.format("", *headers))
+    i = 1
+    for result in experiment_results:
+        print(row_format.format("", str(i), result.startTime.strftime('%Y-%m-%d %H:%M:%S'), result.name, result.status))
+        i += 1
+    print("\n")
 
 if __name__ == "__main__":
 
