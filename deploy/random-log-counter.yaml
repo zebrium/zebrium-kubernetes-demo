@@ -20,6 +20,6 @@ spec:
     spec:
       containers:
         - name: random-log-counter
-          image: gcr.io/davids-demo-environment/random_log_counter:v1
+          image: zebrium/random-log-counter:latest
           imagePullPolicy: Always
 ---

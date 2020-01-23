@@ -37,7 +37,7 @@ def start(args):
 
     # Deploy all demo apps
     os.system("kubectl create -f ./deploy/sock-shop.yaml")
-    # os.system("kubectl create -f ./deploy/random-log-counter.yaml")
+    os.system("kubectl create -f ./deploy/random-log-counter.yaml")
 
     # Deploy Litmus ChaosOperator to run Experiments that create incidents
     os.system("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
