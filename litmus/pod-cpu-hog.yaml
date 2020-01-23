@@ -27,7 +27,7 @@ spec:
       spec:
         components:
           - name: TARGET_CONTAINER
-            value: 'cards-db'
+            value: 'carts-db'
             #number of cpu cores to be consumed
             #verify the resources the app has been launched with
           - name: CPU_CORES
