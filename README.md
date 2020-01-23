@@ -11,6 +11,7 @@ account to run this environment, but support for Amazon and Azure is planned in 
 ## Requirements
 
 1. Python 3.7 or above
+1. Free Zebrium account to collect logs: [https://www.zebrium.com](https://www.zebrium.com/private-beta-sign-up?utm_campaign=Sign-up&utm_source=github)
 1. Google Cloud Login: https://console.cloud.google.com/
 1. GCloud CLI installed locally and logged in: https://cloud.google.com/sdk/docs/quickstarts
 1. Kubectl installed locally: https://kubernetes.io/docs/tasks/tools/install-kubectl/
