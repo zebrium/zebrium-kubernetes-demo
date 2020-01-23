@@ -153,7 +153,7 @@ def test(args):
     print(f"* Experiments Result Summary")
     print("***************************************************************************************************\n")
     headers = ["#", "Start Time", "Experiment", "Status"]
-    row_format = "{:>20}" * (len(headers) + 1)
+    row_format = "{:>25}" * (len(headers) + 1)
     print(row_format.format("", *headers))
     i = 1
     for result in experiment_results:
