@@ -183,7 +183,7 @@ if __name__ == "__main__":
     parser_test = subparsers.add_parser("test", help="Run Litmus ChaosEngine Experiments inside Zebrium's demo environment.")
     parser_test.add_argument("-t", "--test", type=str, default="*",
                              help="Name of test to run based on yaml file name under /litmus folder. '*' runs all of them with wait time between each experiement.")
-    parser_test.add_argument("-w", "--wait", type=int, default=20,
+    parser_test.add_argument("-w", "--wait", type=int, default=15,
                              help="Number of minutes to wait between experiments. Defaults to 20 mins to avoid Zebrium clustering incidents together.")
     parser_test.set_defaults(func=test)
 
