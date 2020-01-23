@@ -27,6 +27,11 @@ spec:
         ports:
         - name: mongo
           containerPort: 27017
+        resources:
+          requests:
+            ephemeral-storage: "1Gi"
+          limits:
+            ephemeral-storage: "2Gi"
         securityContext:
           capabilities:
             drop:
