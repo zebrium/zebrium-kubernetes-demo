@@ -32,3 +32,5 @@ spec:
           # chaos lib used to inject the chaos
           - name: LIB
             value: 'litmus'
+          - name: RAMP_TIME
+            value: "660"

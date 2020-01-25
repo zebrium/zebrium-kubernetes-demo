@@ -42,3 +42,5 @@ spec:
             value: "60000"
           - name: LIB
             value: pumba
+          - name: RAMP_TIME
+            value: "660"

@@ -28,3 +28,5 @@ spec:
         components:
         - name: TARGET_CONTAINER
           value: carts-db
+        - name: RAMP_TIME
+          value: "660"

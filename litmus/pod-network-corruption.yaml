@@ -34,3 +34,5 @@ spec:
         - name: NETWORK_INTERFACE
           #Network interface inside target container
           value: eth0
+        - name: RAMP_TIME
+          value: "660"
