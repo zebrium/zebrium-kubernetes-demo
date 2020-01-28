@@ -173,7 +173,7 @@ if __name__ == "__main__":
                         help="Set GCloud Project to spin GKE cluster up in")
     parser_start.add_argument("-z", "--zone", type=str, default="us-central1-a",
                         help="Set GCloud Zone to spin GKE cluster up in")
-    parser_start.add_argument("-n", "--name", type=str, default="zebrium-demo-gke",
+    parser_start.add_argument("-n", "--name", type=str, default="zebrium-k8s-demo",
                         help="Set GKE cluster name")
     parser_start.add_argument("-k", "--key", type=str,
                         help="Set Zebrium collector key for demo account")
