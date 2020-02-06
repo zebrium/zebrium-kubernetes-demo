@@ -31,9 +31,12 @@ def start(args):
     print("\nGKE Cluster Running with following nodes:\n")
     os.system(f"kubectl get nodes")
 
-    # Deploy Zebrium Collector
-    os.system(f"kubectl create secret generic zlog-collector-config --from-literal=log-collector-url=https://zapi03.zebrium.com --from-literal=auth-token={args.key}")
-    os.system("kubectl create -f ./deploy/zlog-collector.yaml")
+    # Deploy Zebrium Collector using Helm
+    ze_deployment_name = "zebrium-k8s-demo"
+    ze_api_url = "https://zapi03.zebrium.com"
+    os.system("sleep 60") # Wait 1 min for cluster to finish setting up fully
+    os.system("kubectl create namespace zebrium")
+    os.system(f"helm install zlog-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl={ze_api_url},zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-kubernetes-collector/master/charts zlog-collector")
 
     # Deploy all demo apps
     os.system("kubectl create -f ./deploy/sock-shop.yaml")

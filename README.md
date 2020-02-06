@@ -15,6 +15,7 @@ account to run this environment, but support for Amazon and Azure is planned in 
 1. Google Cloud Login: https://console.cloud.google.com/
 1. GCloud CLI installed locally and logged in: https://cloud.google.com/sdk/docs/quickstarts
 1. Kubectl installed locally: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+1. Helm installed locally: https://helm.sh/docs/intro/install/
 
 ## Usage
 
