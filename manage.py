@@ -71,7 +71,7 @@ def start(args):
         print("Ingress still being setup. Use the following command to get the IP later:")
         print("\tkubectl get ingress basic-ingress --namespace=sock-shop")
 
-    print("\nFinished creating cluster. Please wait a few minutes for environment to become fully initalised.")
+    print("\nFinished creating cluster. Please wait at least 15 minutes for environment to become fully initalised.")
     print("The ingress to access the web application from your browser can take at least 5 minutes to create.")
 
 def stop(args):
