@@ -38,6 +38,8 @@ def start(args):
     os.system("sleep 60") # Wait 1 min for cluster to finish setting up fully
     os.system("kubectl create namespace zebrium")
     os.system(f"helm install zlog-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl={ze_api_url},zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-kubernetes-collector/master/charts zlog-collector")
+    # Install Prometheus collector (EXPERIMENTAL)
+    os.system(f"helm install zstats-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl=https://52.43.194.183:30408/api/v1/zstats,zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-stats/master/charts zstats")
 
     # Deploy all demo apps
     os.system("kubectl create -f ./deploy/sock-shop.yaml")
@@ -74,7 +76,7 @@ def start(args):
         print("\tkubectl get ingress basic-ingress --namespace=sock-shop")
 
     print("\nFinished creating cluster. Please wait at least 15 minutes for environment to become fully initalised.")
-    print("The ingress to access the web application from your browser can take at least 5 minutes to create.")
+    print("The ingress to access the web application from your browser can take at least 5 minutes to create.\n\n")
 
 def stop(args):
     """
