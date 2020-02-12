@@ -77,6 +77,7 @@ To run a specific experiment (found under the ./litmus directory):
 1. **pod-network-corruption**: https://docs.litmuschaos.io/docs/pod-network-corruption
 1. **pod-network-latency**: https://docs.litmuschaos.io/docs/pod-network-latency
 1. **pod-network-loss**: https://docs.litmuschaos.io/docs/pod-network-loss
+1. **kafka-broker-pod-failure**: https://docs.litmuschaos.io/docs/kafka-broker-pod-failure/
 
 ### Notes
 
