@@ -35,5 +35,3 @@ spec:
           # pod failures without '--force' & default terminationGracePeriodSeconds
           - name: FORCE
             value: "false"
-          - name: RAMP_TIME
-            value: "660"

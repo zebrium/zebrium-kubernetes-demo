@@ -73,7 +73,3 @@ spec:
           # pod failures without '--force' & default terminationGracePeriodSeconds
           - name: FORCE
             value: "false"
-
-          # Time to delay between setup and running experiment
-          - name: RAMP_TIME
-            value: "660"

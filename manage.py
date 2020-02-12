@@ -98,7 +98,7 @@ class ExperimentResult(object):
         self.status = status
         self.startTime = startTime
 
-def run_experiment(experiment: str, ramp_time: int = 0):
+def run_experiment(experiment: str, delay: int = 0):
     """
     Run a specific experiment
 
@@ -118,10 +118,15 @@ def run_experiment(experiment: str, ramp_time: int = 0):
         result_name = spec['metadata']['name']
         namespace = spec['metadata']['namespace']
 
-    print(f"Running Litmus ChaosEngine Experiment {experiment_file} in namespace {namespace} with ramp_time {ramp_time} seconds...")
+        # Create temp file with updated RAMP_TIME
+        spec['spec']['experiments'][0]['spec']['components'].append({'name': 'RAMP_TIME', 'value': str(delay)})
+        with open(r"temp.yaml", 'w') as temp:
+            yaml.dump(spec, temp)
+
+    print(f"Running Litmus ChaosEngine Experiment {experiment_file} in namespace {namespace} with delay {delay} seconds...")
     print(f"Deploying {experiment_file}...")
     os.system(f"kubectl delete chaosengine {result_name} -n {namespace}")
-    os.system(f"kubectl create -f ./litmus/{experiment_file} -n {namespace}")
+    os.system(f"kubectl create -f temp.yaml -n {namespace}")
 
     # Check status of experiment execution
     startTime = datetime.now()
@@ -134,6 +139,9 @@ def run_experiment(experiment: str, ramp_time: int = 0):
     # View experiment results
     print(f"\nkubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
     os.system(f"kubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
+
+    # Delete temp file
+    os.system('rm temp.yaml')
 
     # Store Experiment Result
     status = subprocess.check_output("kubectl get chaosresult " + result_name + "-" + experiment + " -n " + namespace + " -o jsonpath='{.spec.experimentstatus.verdict}'", shell=True).decode('unicode-escape')
@@ -154,7 +162,7 @@ def test(args):
         # Run all experiments in /litmus directory with wait time between them
         print(f"Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...")
         for experiment_file in experiments:
-            result = run_experiment(experiment_file.replace('.yaml', ''))
+            result = run_experiment(experiment_file.replace('.yaml', ''), args.delay)
             experiment_results.append(result)
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Waiting {args.wait} mins before running next experiment...")
             time.sleep(args.wait * 60)
@@ -162,7 +170,7 @@ def test(args):
         # Check experiment exists
         experiment_file = args.test + ".yaml"
         if experiment_file in experiments:
-            result = run_experiment(args.test, args.ramp)
+            result = run_experiment(args.test, args.delay)
             experiment_results.append(result)
         else:
             print(f"ERROR: {experiment_file} not found in ./litmus directory. Please check the name and try again.")
@@ -205,8 +213,8 @@ if __name__ == "__main__":
                              help="Name of test to run based on yaml file name under /litmus folder. '*' runs all of them with wait time between each experiement.")
     parser_test.add_argument("-w", "--wait", type=int, default=15,
                              help="Number of minutes to wait between experiments. Defaults to 20 mins to avoid Zebrium clustering incidents together.")
-    parser_test.add_argument("-r", "--ramp", type=int, default=660,
-                             help="Ramp up time in seconds between setting up experiment and running it. Defaults to 660 seconds.")
+    parser_test.add_argument("-d", "--delay", type=int, default=660,
+                             help="Delay time in seconds between setting up experiment and running it. Defaults to 660 seconds.")
     parser_test.set_defaults(func=test)
 
     # Stop command
