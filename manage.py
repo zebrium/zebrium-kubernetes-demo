@@ -53,8 +53,9 @@ def start(args):
     # Deploy Litmus ChaosOperator to run Experiments that create incidents
     os.system("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
 
-    # Install the generic K8s experiments CR
+    # Install Litmus Experiments
     os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
+    os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/kafka/experiments.yaml -n kafka")
 
     # Create the chaos serviceaccount with permissions needed to run the generic K8s experiments
     os.system("kubectl create -f ./deploy/litmus-rbac.yaml")
@@ -120,7 +121,7 @@ def run_experiment(experiment: str, ramp_time: int = 0):
     print(f"Running Litmus ChaosEngine Experiment {experiment_file} in namespace {namespace} with ramp_time {ramp_time} seconds...")
     print(f"Deploying {experiment_file}...")
     os.system(f"kubectl delete chaosengine {result_name} -n {namespace}")
-    os.system(f"kubectl create -f ./litmus/{experiment_file}")
+    os.system(f"kubectl create -f ./litmus/{experiment_file} -n {namespace}")
 
     # Check status of experiment execution
     startTime = datetime.now()
