@@ -48,6 +48,7 @@ def start(args):
     os.system("helm repo add confluentinc https://confluentinc.github.io/cp-helm-charts/")
     os.system("helm repo update")
     os.system("helm install kafka-cluster confluentinc/cp-helm-charts --namespace=kafka")
+    os.system('kubectl annotate sts/kafka-cluster-cp-kafka litmuschaos.io/chaos="true" -n kafka')
 
     # Deploy Litmus ChaosOperator to run Experiments that create incidents
     os.system("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
