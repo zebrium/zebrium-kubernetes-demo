@@ -42,7 +42,7 @@ metadata:
   namespace: kafka
 rules:
 - apiGroups: ["", "extensions", "apps", "batch", "litmuschaos.io"]
-  resources:  ["pods","deployments","jobs","pod/exec","statefulsets", "nodes", "configmaps", "secrets","chaosengines","chaosexperiments","chaosresults"]
+  resources:  ["pods","deployments","jobs","pods/exec","statefulsets", "nodes", "configmaps", "secrets","chaosengines","chaosexperiments","chaosresults"]
   verbs: ["*"]
 ---
 kind: ClusterRoleBinding
