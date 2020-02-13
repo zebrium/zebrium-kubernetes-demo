@@ -147,12 +147,13 @@ def run_experiment(experiment: str, delay: int = 0):
     print(f"{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
     expStatusCmd = "kubectl get chaosengine " + result_name + " -o jsonpath='{.status.experiments[0].status}' -n " + namespace
     run_shell(expStatusCmd)
+    print("\n//** Experiment Logs **//\n\n")
     while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
-        print(".")
+        os.system(f"kubectl logs --since=10s -l name={experiment} -n {namespace}")
         os.system("sleep 10")
 
     # View experiment results
-    print(f"\nkubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
+    print("\n\n//** End of Experiment Logs **//\n")
     run_shell(f"kubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
 
     # Delete temp file
