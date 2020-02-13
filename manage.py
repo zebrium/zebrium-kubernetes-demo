@@ -103,7 +103,7 @@ def stop(args):
     """
     Shutdown the GKE Cluster with Zebrium's demo environment deployed.
     """
-    print(f"Stopping GKE cluster in project {args.project} with name {args.name} in zone {args.zone}")
+    print(f"{bcolors.BOLD}Stopping GKE cluster in project {args.project} with name {args.name} in zone {args.zone}{bcolors.ENDC}")
 
     # Set GCloud project
     run_shell(f"gcloud config set project \"{args.project}\"")
