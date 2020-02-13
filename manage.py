@@ -168,17 +168,21 @@ def run_experiment(experiment: str, delay: int = 0):
     expStatusCmd = "kubectl get chaosengine " + result_name + " -o jsonpath='{.status.experiments[0].status}' -n " + namespace
     run_shell(expStatusCmd)
     print(f"\n{bcolors.OKGREEN}//** Experiment Logs **//\n\n")
-    while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
-        os.system(f"kubectl logs --since=10s -l name={experiment} -n {namespace}")
-        os.system("sleep 10")
+    try:
+        while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
+            os.system(f"kubectl logs --since=10s -l name={experiment} -n {namespace}")
+            os.system("sleep 10")
 
-    print(f"\n\n//** End of Experiment Logs **//{bcolors.ENDC}\n")
+        print(f"\n\n//** End of Experiment Logs **//{bcolors.ENDC}\n")
 
-    # View experiment results
-    run_shell(f"kubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
+        # View experiment results
+        run_shell(f"kubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
 
-    # Delete temp file
-    run_shell('rm temp.yaml')
+        # Delete temp file
+        run_shell('rm temp.yaml')
+    except:
+        print_color("User has cancelled script execution.", bcolors.FAIL)
+        sys.exit(2)
 
     # Store Experiment Result
     status = subprocess.check_output("kubectl get chaosresult " + result_name + "-" + experiment + " -n " + namespace + " -o jsonpath='{.spec.experimentstatus.verdict}'", shell=True).decode('unicode-escape')
