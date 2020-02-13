@@ -34,13 +34,15 @@ usage: manage.py [-h] {start,test,stop} ...
 Spin up Zebrium Demo Environment on Kubernetes.
 
 positional arguments:
-  {start,test,stop}
-    start            Start a GKE Cluster with Zebrium's demo environment
-                     deployed.
-    test             Run Litmus ChaosEngine Experiments inside Zebrium's demo
-                     environment.
-    stop             Shutdown the GKE Cluster with Zebrium's demo environment
-                     deployed.
+  {start,test,list,stop}
+    start               Start a GKE Cluster with Zebrium's demo environment
+                        deployed.
+    test                Run Litmus ChaosEngine Experiments inside Zebrium's
+                        demo environment.
+    list                List all available Litmus ChaosEngine Experiments
+                        available to run.
+    stop                Shutdown the GKE Cluster with Zebrium's demo
+                        environment deployed.
 ```
 
 ## Startup
@@ -106,6 +108,14 @@ kubectl logs container-kill-1oo8wv-85lsl -n sock-shop
 ```bash
 kubectl delete chaosengine sock-chaos -n sock-shop
 kubectl apply -f litmus/chaosengine.yaml 
+```
+
+## List
+
+Lists all the available Litmus Chaos Experiments in this repo under the `./litmus` directory:
+
+```bash
+./manage.py list
 ```
 
 ## Shutdown
