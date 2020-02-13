@@ -9,6 +9,17 @@ from datetime import datetime
 import subprocess
 import yaml
 
+def run_shell(cmd: str):
+    """
+    Runs a shell command and prints command to stdout before
+    running so user can see what was run
+
+    :param cmd:     The shell command to run
+    :return:
+    """
+    print(f"** RUNNING: {cmd}")
+    os.system(cmd)
+
 # Subcommand options
 
 def start(args):
@@ -18,53 +29,53 @@ def start(args):
     print(f"Starting GKE cluster in project {args.project} with name {args.name} in zone {args.zone}")
 
     # Ensure GCloud SDK is up to date
-    os.system("gcloud components update")
+    run_shell("gcloud components update")
 
     # Set GCloud project
-    os.system(f"gcloud config set project \"{args.project}\"")
+    run_shell(f"gcloud config set project \"{args.project}\"")
 
     # Spinup cluster
-    os.system(f"gcloud container clusters create {args.name} --zone {args.zone}")
+    run_shell(f"gcloud container clusters create {args.name} --zone {args.zone}")
 
     # Get kubectl credentials
-    os.system(f"gcloud container clusters get-credentials {args.name} --zone {args.zone}")
+    run_shell(f"gcloud container clusters get-credentials {args.name} --zone {args.zone}")
 
     print("\nGKE Cluster Running with following nodes:\n")
-    os.system(f"kubectl get nodes")
+    run_shell(f"kubectl get nodes")
 
     # Deploy Zebrium Collector using Helm
     ze_deployment_name = "zebrium-k8s-demo"
     ze_api_url = "https://zapi03.zebrium.com"
-    os.system("sleep 60") # Wait 1 min for cluster to finish setting up fully
-    os.system("kubectl create namespace zebrium")
-    os.system(f"helm install zlog-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl={ze_api_url},zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-kubernetes-collector/master/charts zlog-collector")
+    run_shell("sleep 60") # Wait 1 min for cluster to finish setting up fully
+    run_shell("kubectl create namespace zebrium")
+    run_shell(f"helm install zlog-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl={ze_api_url},zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-kubernetes-collector/master/charts zlog-collector")
     # Install Prometheus collector (EXPERIMENTAL)
-    os.system(f"helm install zstats-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl=https://52.43.194.183:30408/api/v1/zstats,zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-stats/master/charts zstats")
+    run_shell(f"helm install zstats-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl=https://52.43.194.183:30408/api/v1/zstats,zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-stats/master/charts zstats")
 
     # Deploy all demo apps
-    os.system("kubectl create -f ./deploy/sock-shop.yaml")
-    os.system("kubectl create -f ./deploy/random-log-counter.yaml")
+    run_shell("kubectl create -f ./deploy/sock-shop.yaml")
+    run_shell("kubectl create -f ./deploy/random-log-counter.yaml")
 
     # Deploy kafka demo app
-    os.system("kubectl create namespace kafka")
-    os.system("helm repo add confluentinc https://confluentinc.github.io/cp-helm-charts/")
-    os.system("helm repo update")
-    os.system("helm install kafka-cluster confluentinc/cp-helm-charts --namespace=kafka")
-    os.system('kubectl annotate sts/kafka-cluster-cp-kafka litmuschaos.io/chaos="true" -n kafka')
+    run_shell("kubectl create namespace kafka")
+    run_shell("helm repo add confluentinc https://confluentinc.github.io/cp-helm-charts/")
+    run_shell("helm repo update")
+    run_shell("helm install kafka-cluster confluentinc/cp-helm-charts --namespace=kafka")
+    run_shell('kubectl annotate sts/kafka-cluster-cp-kafka litmuschaos.io/chaos="true" -n kafka')
 
     # Deploy Litmus ChaosOperator to run Experiments that create incidents
-    os.system("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
+    run_shell("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
 
     # Install Litmus Experiments
-    os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
-    os.system("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/kafka/experiments.yaml -n kafka")
+    run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
+    run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/kafka/experiments.yaml -n kafka")
 
     # Create the chaos serviceaccount with permissions needed to run the generic K8s experiments
-    os.system("kubectl create -f ./deploy/litmus-rbac.yaml")
+    run_shell("kubectl create -f ./deploy/litmus-rbac.yaml")
 
     # Get ingress IP address
     print("\nIngress Details:\n")
-    os.system("kubectl get ingress basic-ingress --namespace=sock-shop")
+    run_shell("kubectl get ingress basic-ingress --namespace=sock-shop")
 
     try:
         ingress_ip = \
@@ -85,10 +96,10 @@ def stop(args):
     print(f"Stopping GKE cluster in project {args.project} with name {args.name} in zone {args.zone}")
 
     # Set GCloud project
-    os.system(f"gcloud config set project \"{args.project}\"")
+    run_shell(f"gcloud config set project \"{args.project}\"")
 
     # Stop cluster
-    os.system(f"gcloud container clusters delete {args.name} --zone {args.zone}")
+    run_shell(f"gcloud container clusters delete {args.name} --zone {args.zone}")
 
 class ExperimentResult(object):
     """
@@ -121,29 +132,31 @@ def run_experiment(experiment: str, delay: int = 0):
         namespace = spec['metadata']['namespace']
 
         # Create temp file with updated RAMP_TIME
-        spec['spec']['experiments'][0]['spec']['components'].append({'name': 'RAMP_TIME', 'value': str(delay)})
+        if (delay > 0):
+            spec['spec']['experiments'][0]['spec']['components'].append({'name': 'RAMP_TIME', 'value': str(delay)})
         with open(r"temp.yaml", 'w') as temp:
             yaml.dump(spec, temp)
 
     print(f"Running Litmus ChaosEngine Experiment {experiment_file} in namespace {namespace} with delay {delay} seconds...")
     print(f"Deploying {experiment_file}...")
-    os.system(f"kubectl delete chaosengine {result_name} -n {namespace}")
-    os.system(f"kubectl create -f temp.yaml -n {namespace}")
+    run_shell(f"kubectl delete chaosengine {result_name} -n {namespace}")
+    run_shell(f"kubectl create -f temp.yaml -n {namespace}")
 
     # Check status of experiment execution
     startTime = datetime.now()
     print(f"{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
     expStatusCmd = "kubectl get chaosengine " + result_name + " -o jsonpath='{.status.experiments[0].status}' -n " + namespace
+    run_shell(expStatusCmd)
     while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
         print(".")
         os.system("sleep 10")
 
     # View experiment results
     print(f"\nkubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
-    os.system(f"kubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
+    run_shell(f"kubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
 
     # Delete temp file
-    os.system('rm temp.yaml')
+    run_shell('rm temp.yaml')
 
     # Store Experiment Result
     status = subprocess.check_output("kubectl get chaosresult " + result_name + "-" + experiment + " -n " + namespace + " -o jsonpath='{.spec.experimentstatus.verdict}'", shell=True).decode('unicode-escape')
