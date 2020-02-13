@@ -9,6 +9,16 @@ from datetime import datetime
 import subprocess
 import yaml
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 def run_shell(cmd: str):
     """
     Runs a shell command and prints command to stdout before
@@ -17,7 +27,7 @@ def run_shell(cmd: str):
     :param cmd:     The shell command to run
     :return:
     """
-    print(f"** RUNNING: {cmd}")
+    print(f"{bcolors.BOLD}** RUNNING: {cmd}{bcolors.ENDC}")
     os.system(cmd)
 
 # Subcommand options
@@ -86,8 +96,8 @@ def start(args):
         print("Ingress still being setup. Use the following command to get the IP later:")
         print("\tkubectl get ingress basic-ingress --namespace=sock-shop")
 
-    print("\nFinished creating cluster. Please wait at least 15 minutes for environment to become fully initalised.")
-    print("The ingress to access the web application from your browser can take at least 5 minutes to create.\n\n")
+    print(f"\n{bcolors.WARNING}Finished creating cluster. Please wait at least 15 minutes for environment to become fully initalised.")
+    print(f"The ingress to access the web application from your browser can take at least 5 minutes to create.{bcolors.ENDC}\n\n")
 
 def stop(args):
     """
@@ -119,9 +129,9 @@ def run_experiment(experiment: str, delay: int = 0):
     :param ramp_time:   The number of seconds to delay experiment after setup to avoid confusing setup events with experiment events in Zebrium
     :return:            ExperimentResult object with results of experiment
     """
-    print("***************************************************************************************************")
+    print(f"{bcolors.OKBLUE}***************************************************************************************************")
     print(f"* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Experiment: {experiment}")
-    print("***************************************************************************************************")
+    print(f"***************************************************************************************************{bcolors.ENDC}")
 
     experiment_file = experiment + ".yaml"
 
@@ -137,23 +147,23 @@ def run_experiment(experiment: str, delay: int = 0):
         with open(r"temp.yaml", 'w') as temp:
             yaml.dump(spec, temp)
 
-    print(f"Running Litmus ChaosEngine Experiment {experiment_file} in namespace {namespace} with delay {delay} seconds...")
-    print(f"Deploying {experiment_file}...")
+    print(f"{bcolors.BOLD}Running Litmus ChaosEngine Experiment {experiment_file} in namespace {namespace} with delay {delay} seconds...")
+    print(f"Deploying {experiment_file}...{bcolors.ENDC}")
     run_shell(f"kubectl delete chaosengine {result_name} -n {namespace}")
     run_shell(f"kubectl create -f temp.yaml -n {namespace}")
 
     # Check status of experiment execution
     startTime = datetime.now()
-    print(f"{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
+    print(f"{bcolors.BOLD}{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...{bcolors.ENDC}")
     expStatusCmd = "kubectl get chaosengine " + result_name + " -o jsonpath='{.status.experiments[0].status}' -n " + namespace
     run_shell(expStatusCmd)
-    print("\n//** Experiment Logs **//\n\n")
+    print(f"\n{bcolors.OKGREEN}//** Experiment Logs **//\n\n")
     while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
         os.system(f"kubectl logs --since=10s -l name={experiment} -n {namespace}")
         os.system("sleep 10")
 
     # View experiment results
-    print("\n\n//** End of Experiment Logs **//\n")
+    print(f"\n\n//** End of Experiment Logs **//{bcolors.ENDC}\n")
     run_shell(f"kubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
 
     # Delete temp file
@@ -176,11 +186,11 @@ def test(args):
 
     if args.test == '*':
         # Run all experiments in /litmus directory with wait time between them
-        print(f"Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...")
+        print(f"{bcolors.BOLD}Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...{bcolors.ENDC}")
         for experiment_file in experiments:
             result = run_experiment(experiment_file.replace('.yaml', ''), args.delay)
             experiment_results.append(result)
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Waiting {args.wait} mins before running next experiment...")
+            print(f"{bcolors.WARNING}{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Waiting {args.wait} mins before running next experiment...{bcolors.ENDC}")
             time.sleep(args.wait * 60)
     else:
         # Check experiment exists
@@ -189,12 +199,12 @@ def test(args):
             result = run_experiment(args.test, args.delay)
             experiment_results.append(result)
         else:
-            print(f"ERROR: {experiment_file} not found in ./litmus directory. Please check the name and try again.")
+            print(f"{bcolors.FAIL}ERROR: {experiment_file} not found in ./litmus directory. Please check the name and try again.{bcolors.ENDC}")
             sys.exit(2)
 
     # Print out experiment result summary
-    print("***************************************************************************************************")
-    print(f"* Experiments Result Summary")
+    print(f"{bcolors.OKGREEN}***************************************************************************************************")
+    print("* Experiments Result Summary")
     print("***************************************************************************************************\n")
     headers = ["#", "Start Time", "Experiment", "Status"]
     row_format = "{:>25}" * (len(headers) + 1)
@@ -203,7 +213,7 @@ def test(args):
     for result in experiment_results:
         print(row_format.format("", str(i), result.startTime.strftime('%Y-%m-%d %H:%M:%S'), result.name, result.status))
         i += 1
-    print("\n")
+    print(f"{bcolors.ENDC}\n")
 
 if __name__ == "__main__":
 
