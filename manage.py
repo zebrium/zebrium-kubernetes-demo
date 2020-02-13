@@ -19,6 +19,16 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+def print_color(text: str, color:bcolors = bcolors.BOLD):
+    """
+    Utility method to print colored text to stdout.
+
+    :param text:        The text to print
+    :param color:       The bcolors to print text in (defaults to bold)
+    :return:
+    """
+    print(f"{color}{text}{bcolors.ENDC}")
+
 def run_shell(cmd: str):
     """
     Runs a shell command and prints command to stdout before
@@ -27,7 +37,7 @@ def run_shell(cmd: str):
     :param cmd:     The shell command to run
     :return:
     """
-    print(f"{bcolors.BOLD}** RUNNING: {cmd}{bcolors.ENDC}")
+    print_color(f"** RUNNING: {cmd}")
     os.system(cmd)
 
 # Subcommand options
@@ -36,7 +46,7 @@ def start(args):
     """
     Start a GKE Cluster with Zebrium's demo environment deployed.
     """
-    print(f"Starting GKE cluster in project {args.project} with name {args.name} in zone {args.zone}")
+    print_color(f"Starting GKE cluster in project {args.project} with name {args.name} in zone {args.zone}", bcolors.OKBLUE)
 
     # Ensure GCloud SDK is up to date
     run_shell("gcloud components update")
@@ -50,7 +60,7 @@ def start(args):
     # Get kubectl credentials
     run_shell(f"gcloud container clusters get-credentials {args.name} --zone {args.zone}")
 
-    print("\nGKE Cluster Running with following nodes:\n")
+    print_color("\nGKE Cluster Running with following nodes:\n")
     run_shell(f"kubectl get nodes")
 
     # Deploy Zebrium Collector using Helm
@@ -84,26 +94,26 @@ def start(args):
     run_shell("kubectl create -f ./deploy/litmus-rbac.yaml")
 
     # Get ingress IP address
-    print("\nIngress Details:\n")
+    print_color("\nIngress Details:\n", bcolors.UNDERLINE)
     run_shell("kubectl get ingress basic-ingress --namespace=sock-shop")
 
     try:
         ingress_ip = \
         json.loads(os.popen('kubectl get ingress basic-ingress --namespace=sock-shop -o json').read())["status"][
             "loadBalancer"]["ingress"][0]["ip"]
-        print(f"\nYou can access the web application in a few minutes at: http://{ingress_ip}")
+        print_color(f"\nYou can access the web application in a few minutes at: http://{ingress_ip}")
     except:
-        print("Ingress still being setup. Use the following command to get the IP later:")
-        print("\tkubectl get ingress basic-ingress --namespace=sock-shop")
+        print_color("Ingress still being setup. Use the following command to get the IP later:", bcolors.WARNING)
+        print_color("\tkubectl get ingress basic-ingress --namespace=sock-shop", bcolors.WARNING)
 
-    print(f"\n{bcolors.WARNING}Finished creating cluster. Please wait at least 15 minutes for environment to become fully initalised.")
-    print(f"The ingress to access the web application from your browser can take at least 5 minutes to create.{bcolors.ENDC}\n\n")
+    print_color(f"\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Finished creating cluster. Please wait at least 15 minutes for environment to become fully initalised.", bcolors.WARNING)
+    print_color(f"The ingress to access the web application from your browser can take at least 5 minutes to create.\n\n",bcolors.WARNING)
 
 def stop(args):
     """
     Shutdown the GKE Cluster with Zebrium's demo environment deployed.
     """
-    print(f"{bcolors.BOLD}Stopping GKE cluster in project {args.project} with name {args.name} in zone {args.zone}{bcolors.ENDC}")
+    print_color(f"Stopping GKE cluster in project {args.project} with name {args.name} in zone {args.zone}", bcolors.OKBLUE)
 
     # Set GCloud project
     run_shell(f"gcloud config set project \"{args.project}\"")
@@ -129,9 +139,9 @@ def run_experiment(experiment: str, delay: int = 0):
     :param ramp_time:   The number of seconds to delay experiment after setup to avoid confusing setup events with experiment events in Zebrium
     :return:            ExperimentResult object with results of experiment
     """
-    print(f"{bcolors.OKBLUE}***************************************************************************************************")
-    print(f"* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Experiment: {experiment}")
-    print(f"***************************************************************************************************{bcolors.ENDC}")
+    print_color(f"***************************************************************************************************", bcolors.OKBLUE)
+    print_color(f"* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Experiment: {experiment}", bcolors.OKBLUE)
+    print_color(f"***************************************************************************************************", bcolors.OKBLUE)
 
     experiment_file = experiment + ".yaml"
 
@@ -147,14 +157,14 @@ def run_experiment(experiment: str, delay: int = 0):
         with open(r"temp.yaml", 'w') as temp:
             yaml.dump(spec, temp)
 
-    print(f"{bcolors.BOLD}Running Litmus ChaosEngine Experiment {experiment_file} in namespace {namespace} with delay {delay} seconds...")
-    print(f"Deploying {experiment_file}...{bcolors.ENDC}")
+    print_color(f"Running Litmus ChaosEngine Experiment {experiment_file} in namespace {namespace} with delay {delay} seconds...")
+    print_color(f"Deploying {experiment_file}...")
     run_shell(f"kubectl delete chaosengine {result_name} -n {namespace}")
     run_shell(f"kubectl create -f temp.yaml -n {namespace}")
 
     # Check status of experiment execution
     startTime = datetime.now()
-    print(f"{bcolors.BOLD}{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...{bcolors.ENDC}")
+    print_color(f"{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
     expStatusCmd = "kubectl get chaosengine " + result_name + " -o jsonpath='{.status.experiments[0].status}' -n " + namespace
     run_shell(expStatusCmd)
     print(f"\n{bcolors.OKGREEN}//** Experiment Logs **//\n\n")
@@ -162,8 +172,9 @@ def run_experiment(experiment: str, delay: int = 0):
         os.system(f"kubectl logs --since=10s -l name={experiment} -n {namespace}")
         os.system("sleep 10")
 
-    # View experiment results
     print(f"\n\n//** End of Experiment Logs **//{bcolors.ENDC}\n")
+
+    # View experiment results
     run_shell(f"kubectl describe chaosresult {result_name}-{experiment} -n {namespace}")
 
     # Delete temp file
@@ -181,16 +192,16 @@ def test(args):
     but by default all '*' experiments will be run with 20 minute wait period between each experiment
     to ensure Zebrium doesn't cluster the incidents together into one incident
     """
-    experiments = os.listdir('./litmus')
+    experiments = sorted(os.listdir('./litmus'))
     experiment_results = []
 
     if args.test == '*':
         # Run all experiments in /litmus directory with wait time between them
-        print(f"{bcolors.BOLD}Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...{bcolors.ENDC}")
+        print_color(f"Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...")
         for experiment_file in experiments:
             result = run_experiment(experiment_file.replace('.yaml', ''), args.delay)
             experiment_results.append(result)
-            print(f"{bcolors.WARNING}{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Waiting {args.wait} mins before running next experiment...{bcolors.ENDC}")
+            print_color(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Waiting {args.wait} mins before running next experiment...", bcolors.WARNING)
             time.sleep(args.wait * 60)
     else:
         # Check experiment exists
@@ -199,21 +210,32 @@ def test(args):
             result = run_experiment(args.test, args.delay)
             experiment_results.append(result)
         else:
-            print(f"{bcolors.FAIL}ERROR: {experiment_file} not found in ./litmus directory. Please check the name and try again.{bcolors.ENDC}")
+            print_color(f"ERROR: {experiment_file} not found in ./litmus directory. Please check the name and try again.", bcolors.FAIL)
             sys.exit(2)
 
     # Print out experiment result summary
-    print(f"{bcolors.OKGREEN}***************************************************************************************************")
-    print("* Experiments Result Summary")
-    print("***************************************************************************************************\n")
+    print_color("***************************************************************************************************", bcolors.OKBLUE)
+    print_color("* Experiments Result Summary", bcolors.OKBLUE)
+    print_color("***************************************************************************************************\n", bcolors.OKBLUE)
     headers = ["#", "Start Time", "Experiment", "Status"]
     row_format = "{:>25}" * (len(headers) + 1)
-    print(row_format.format("", *headers))
+    print_color(row_format.format("", *headers), bcolors.OKBLUE)
     i = 1
     for result in experiment_results:
-        print(row_format.format("", str(i), result.startTime.strftime('%Y-%m-%d %H:%M:%S'), result.name, result.status))
+        print_color(row_format.format("", str(i), result.startTime.strftime('%Y-%m-%d %H:%M:%S'), result.name, result.status), bcolors.OKBLUE)
         i += 1
-    print(f"{bcolors.ENDC}\n")
+    print("\n")
+
+def list(args):
+    """
+    List all available Litmus Chaos Experiments available in this repository
+    """
+    experiments = sorted(os.listdir('./litmus'))
+    print_color("Available Litmus Chaos Experiments:\n\n")
+    i = 1
+    for experiment_file in experiments:
+        print_color(f"\t{i}. {experiment_file.replace('.yaml', '')}")
+        i += 1
 
 if __name__ == "__main__":
 
@@ -242,6 +264,10 @@ if __name__ == "__main__":
     parser_test.add_argument("-d", "--delay", type=int, default=660,
                              help="Delay time in seconds between setting up experiment and running it. Defaults to 660 seconds.")
     parser_test.set_defaults(func=test)
+
+    # List Tests Command
+    parser_list = subparsers.add_parser("list", help="List all available Litmus ChaosEngine Experiments available to run.")
+    parser_list.set_defaults(func=list)
 
     # Stop command
     parser_stop = subparsers.add_parser("stop", help="Shutdown the GKE Cluster with Zebrium's demo environment deployed.")
