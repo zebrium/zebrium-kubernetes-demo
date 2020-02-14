@@ -84,7 +84,7 @@ def start(args):
     run_shell('kubectl annotate sts/kafka-cluster-cp-kafka litmuschaos.io/chaos="true" -n kafka')
 
     # Deploy Litmus ChaosOperator to run Experiments that create incidents
-    run_shell("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.0.0.yaml")
+    run_shell("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-latest.yaml")
 
     # Install Litmus Experiments
     run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
@@ -154,7 +154,7 @@ def run_experiment(experiment: str, delay: int = 0):
 
         # Create temp file with updated RAMP_TIME
         if (delay > 0):
-            spec['spec']['experiments'][0]['spec']['components'].append({'name': 'RAMP_TIME', 'value': str(delay)})
+            spec['spec']['experiments'][0]['spec']['components']['env'].append({'name': 'RAMP_TIME', 'value': str(delay)})
         with open(r"temp.yaml", 'w') as temp:
             yaml.dump(spec, temp)
 

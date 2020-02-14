@@ -4,14 +4,11 @@ metadata:
   name: sock-chaos
   namespace: sock-shop
 spec:
-  # It can be app/infra
-  chaosType: 'app'
+  # It can be true/false
+  annotationCheck: 'true'
+  engineState: 'active'
   #ex. values: sock-shop:name=carts
   auxiliaryAppInfo: ""
-  components:
-    runner:
-      image: "litmuschaos/chaos-executor:1.0.0"
-      type: "go"
   # It can be delete/retain
   jobCleanUpPolicy: delete
   monitoring: true
@@ -26,5 +23,6 @@ spec:
     - name: container-kill
       spec:
         components:
-        - name: TARGET_CONTAINER
-          value: carts-db
+          env:
+            - name: TARGET_CONTAINER
+              value: carts-db
