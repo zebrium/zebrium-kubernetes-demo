@@ -168,7 +168,7 @@ def run_experiment(experiment: str, delay: int = 0):
     print_color(f"{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
     expStatusCmd = "kubectl get chaosengine " + result_name + " -o jsonpath='{.status.experiments[0].status}' -n " + namespace
     run_shell(expStatusCmd)
-    logs_cmd = f"kubectl logs --since=10s -l name={experiment} -n {namespace}"
+    logs_cmd = f"kubectl logs --since=10s {result_name}-runner -n {namespace}"
     print(f"\n{bcolors.OKGREEN}//** Experiment Logs ({logs_cmd}) **//\n\n")
     try:
         while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
