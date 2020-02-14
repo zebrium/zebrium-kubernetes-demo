@@ -66,7 +66,7 @@ def start(args):
     # Deploy Zebrium Collector using Helm
     ze_deployment_name = "zebrium-k8s-demo"
     ze_api_url = "https://zapi03.zebrium.com"
-    run_shell("sleep 60") # Wait 1 min for cluster to finish setting up fully
+    run_shell("sleep 90") # Wait 1.5 mins for cluster to finish setting up fully
     run_shell("kubectl create namespace zebrium")
     run_shell(f"helm install zlog-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl={ze_api_url},zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-kubernetes-collector/master/charts zlog-collector")
     # Install Prometheus collector (EXPERIMENTAL)
@@ -94,6 +94,7 @@ def start(args):
     run_shell("kubectl create -f ./deploy/litmus-rbac.yaml")
 
     # Get ingress IP address
+    run_shell("sleep 60")  # Wait 1 min for ingress to finish setting up
     print_color("\nIngress Details:\n", bcolors.UNDERLINE)
     run_shell("kubectl get ingress basic-ingress --namespace=sock-shop")
 
@@ -167,10 +168,11 @@ def run_experiment(experiment: str, delay: int = 0):
     print_color(f"{startTime.strftime('%Y-%m-%d %H:%M:%S')} Running experiment...")
     expStatusCmd = "kubectl get chaosengine " + result_name + " -o jsonpath='{.status.experiments[0].status}' -n " + namespace
     run_shell(expStatusCmd)
-    print(f"\n{bcolors.OKGREEN}//** Experiment Logs **//\n\n")
+    logs_cmd = f"kubectl logs --since=10s -l name={experiment} -n {namespace}"
+    print(f"\n{bcolors.OKGREEN}//** Experiment Logs ({logs_cmd}) **//\n\n")
     try:
         while subprocess.check_output(expStatusCmd, shell=True).decode('unicode-escape') != "Execution Successful":
-            os.system(f"kubectl logs --since=10s -l name={experiment} -n {namespace}")
+            os.system(logs_cmd)
             os.system("sleep 10")
 
         print(f"\n\n//** End of Experiment Logs **//{bcolors.ENDC}\n")
@@ -263,8 +265,8 @@ if __name__ == "__main__":
     parser_test = subparsers.add_parser("test", help="Run Litmus ChaosEngine Experiments inside Zebrium's demo environment.")
     parser_test.add_argument("-t", "--test", type=str, default="*",
                              help="Name of test to run based on yaml file name under /litmus folder. '*' runs all of them with wait time between each experiement.")
-    parser_test.add_argument("-w", "--wait", type=int, default=15,
-                             help="Number of minutes to wait between experiments. Defaults to 20 mins to avoid Zebrium clustering incidents together.")
+    parser_test.add_argument("-w", "--wait", type=int, default=11,
+                             help="Number of minutes to wait between experiments. Defaults to 11 mins to avoid Zebrium clustering incidents together.")
     parser_test.add_argument("-d", "--delay", type=int, default=660,
                              help="Delay time in seconds between setting up experiment and running it. Defaults to 660 seconds.")
     parser_test.set_defaults(func=test)
