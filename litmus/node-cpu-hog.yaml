@@ -4,31 +4,30 @@ metadata:
   name: sock-chaos
   namespace: sock-shop
 spec:
-  chaosType: 'infra'  # It can be app/infra
+  # It can be app/infra
+  annotationCheck: 'false'
   #ex. values: ns1:name=percona,ns2:run=nginx
   auxiliaryAppInfo: ""
+  engineState: 'active'
   appinfo:
     appns: sock-shop
     applabel: 'name=carts-db'
     appkind: deployment
   chaosServiceAccount: sock-shop-chaos-engine
   monitoring: true
-  components:
-    runner:
-      image: "litmuschaos/chaos-executor:1.0.0"
-      type: "go"
   # It can be delete/retain
   jobCleanUpPolicy: delete
   experiments:
     - name: node-cpu-hog
       spec:
         components:
-           # set chaos duration (in sec) as desired
-          - name: TOTAL_CHAOS_DURATION
-            value: '60'
-          # set chaos platform as desired
-          - name: PLATFORM
-            value: 'GKE'
-          # chaos lib used to inject the chaos
-          - name: LIB
-            value: 'litmus'
+          env: 
+            # set chaos duration (in sec) as desired
+            - name: TOTAL_CHAOS_DURATION
+              value: '60'
+            # set chaos platform as desired
+            - name: PLATFORM
+              value: 'GKE'
+            # chaos lib used to inject the chaos
+            - name: LIB
+              value: 'litmus'

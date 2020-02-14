@@ -4,14 +4,11 @@ metadata:
   name: sock-chaos
   namespace: sock-shop
 spec:
-  # It can be app/infra
-  chaosType: 'app'
+  # It can be true/false
+  annotationCheck: 'true'
   #ex. values: sock-shop:name=carts
   auxiliaryAppInfo: ""
-  components:
-    runner:
-      image: "litmuschaos/chaos-executor:1.0.0"
-      type: "go"
+  engineState: 'active'
   # It can be delete/retain
   jobCleanUpPolicy: delete
   monitoring: true
@@ -26,6 +23,7 @@ spec:
     - name: pod-network-loss
       spec:
         components:
+          env:
             - name: ANSIBLE_STDOUT_CALLBACK
               value: default
             - name: TARGET_CONTAINER
