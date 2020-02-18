@@ -71,3 +71,6 @@ spec:
             # pod failures without '--force' & default terminationGracePeriodSeconds
             - name: FORCE
               value: "false"
+
+            - name: DEFAULT_GATHERING
+              value: "explicit"

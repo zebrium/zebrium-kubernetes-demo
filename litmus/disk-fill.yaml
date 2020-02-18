@@ -29,3 +29,5 @@ spec:
               value: "80"
             - name: TARGET_CONTAINER
               value: "carts-db"
+            - name: DEFAULT_GATHERING
+              value: "explicit"

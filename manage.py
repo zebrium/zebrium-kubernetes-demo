@@ -55,7 +55,7 @@ def start(args):
     run_shell(f"gcloud config set project \"{args.project}\"")
 
     # Spinup cluster
-    run_shell(f"gcloud container clusters create {args.name} --zone {args.zone}")
+    run_shell(f"gcloud container clusters create {args.name} --zone {args.zone} --cluster-version 1.14.10-gke.17 --machine-type n1-standard-2 --no-enable-autoupgrade")
 
     # Get kubectl credentials
     run_shell(f"gcloud container clusters get-credentials {args.name} --zone {args.zone}")
@@ -80,15 +80,18 @@ def start(args):
     run_shell("kubectl create namespace kafka")
     run_shell("helm repo add confluentinc https://confluentinc.github.io/cp-helm-charts/")
     run_shell("helm repo update")
-    run_shell("helm install kafka-cluster confluentinc/cp-helm-charts --namespace=kafka")
+    run_shell("helm install kafka-cluster --set cp-schema-registry.enabled=false,cp-kafka-rest.enabled=false,cp-kafka-connect.enabled=false,cp-control-center.enabled=false,cp-ksql-server.enabled=false confluentinc/cp-helm-charts --namespace=kafka")
     run_shell('kubectl annotate sts/kafka-cluster-cp-kafka litmuschaos.io/chaos="true" -n kafka')
 
     # Deploy Litmus ChaosOperator to run Experiments that create incidents
-    run_shell("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-latest.yaml")
+    run_shell("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.1.0.yaml")
 
-    # Install Litmus Experiments
-    run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
-    run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/kafka/experiments.yaml -n kafka")
+    # Install Litmus Experiments - TEMP Workaround to set experiment versions until Chaos Hub supports in URL
+    run_shell("tar -zxvf <(curl -sL https://github.com/litmuschaos/chaos-charts/archive/1.1.0.tar.gz)")
+    run_shell("find chaos-charts-1.1.0 -name experiments.yaml | grep generic | xargs kubectl apply -n sock-shop -f")
+    run_shell("find chaos-charts-1.1.0 -name experiments.yaml | grep kafka | xargs kubectl apply -n kafka -f")
+    #run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
+    #run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/kafka/experiments.yaml -n kafka")
 
     # Create the chaos serviceaccount with permissions needed to run the generic K8s experiments
     run_shell("kubectl create -f ./deploy/litmus-rbac.yaml")

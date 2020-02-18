@@ -32,3 +32,5 @@ spec:
               #Network interface inside target container
             - name: NETWORK_INTERFACE
               value: eth0
+            - name: DEFAULT_GATHERING
+              value: "explicit"

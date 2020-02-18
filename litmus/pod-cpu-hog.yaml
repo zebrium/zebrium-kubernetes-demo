@@ -33,3 +33,5 @@ spec:
               # in ms
             - name: TOTAL_CHAOS_DURATION
               value: "60000"
+            - name: DEFAULT_GATHERING
+              value: "explicit"

@@ -31,3 +31,5 @@ spec:
             # chaos lib used to inject the chaos
             - name: LIB
               value: 'litmus'
+            - name: DEFAULT_GATHERING
+              value: "explicit"
