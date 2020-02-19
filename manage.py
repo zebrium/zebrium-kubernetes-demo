@@ -209,11 +209,14 @@ def test(args):
     if args.test == '*':
         # Run all experiments in /litmus directory with wait time between them
         print_color(f"Running all Litmus ChaosEngine Experiments with {args.wait} mins wait time between each one...")
+        lstindex = len(experiments)
         for experiment_file in experiments:
             result = run_experiment(experiment_file.replace('.yaml', ''), args.delay)
             experiment_results.append(result)
             print_color(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Waiting {args.wait} mins before running next experiment...", bcolors.WARNING)
-            time.sleep(args.wait * 60)
+            lstindex -= 1
+            if lstindex != 0:
+                time.sleep(args.wait * 60)
     else:
         # Check experiment exists
         experiment_file = args.test + ".yaml"
