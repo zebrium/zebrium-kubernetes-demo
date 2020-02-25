@@ -34,3 +34,7 @@ spec:
               value: eth0
             - name: DEFAULT_GATHERING
               value: "explicit"
+            - name: NETWORK_PACKET_CORRUPTION_PERCENTAGE
+              value: "100"
+            - name: TOTAL_CHAOS_DURATION
+              value: "300000"

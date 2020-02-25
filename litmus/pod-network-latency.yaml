@@ -35,9 +35,9 @@ spec:
             - name: LIB_IMAGE
               value: gaiaadm/pumba:0.6.5
             - name: NETWORK_LATENCY
-              value: "2000"
+              value: "10000"
             - name: TOTAL_CHAOS_DURATION
-              value: "60000"
+              value: "300000"
             - name: LIB
               value: pumba
             - name: DEFAULT_GATHERING

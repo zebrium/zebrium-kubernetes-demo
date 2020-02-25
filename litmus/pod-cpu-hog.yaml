@@ -29,9 +29,9 @@ spec:
               #number of cpu cores to be consumed
               #verify the resources the app has been launched with
             - name: CPU_CORES
-              value: "1"
+              value: "2"
               # in ms
             - name: TOTAL_CHAOS_DURATION
-              value: "60000"
+              value: "300000"
             - name: DEFAULT_GATHERING
               value: "explicit"

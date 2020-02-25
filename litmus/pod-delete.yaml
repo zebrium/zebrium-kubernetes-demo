@@ -26,7 +26,7 @@ spec:
           env: 
              # set chaos duration (in sec) as desired
              - name: TOTAL_CHAOS_DURATION
-               value: '30'
+               value: '300'
              # set chaos interval (in sec) as desired
              - name: CHAOS_INTERVAL
                value: '10'

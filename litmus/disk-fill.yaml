@@ -24,10 +24,13 @@ spec:
       spec:
         components:
           env:
-            # specify the fill percentage according to the disk pressure required
-            - name: FILL_PERCENTAGE
-              value: "80"
             - name: TARGET_CONTAINER
               value: "carts-db"
+            # specify the fill percentage according to the disk pressure required
+            - name: FILL_PERCENTAGE
+              value: "120"
+            # 5 minute duration in ms
+            - name: TOTAL_CHAOS_DURATION
+              value: "5000"
             - name: DEFAULT_GATHERING
               value: "explicit"

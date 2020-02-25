@@ -24,7 +24,7 @@ spec:
           env: 
             # set chaos duration (in sec) as desired
             - name: TOTAL_CHAOS_DURATION
-              value: '60'
+              value: '300'
             # set chaos platform as desired
             - name: PLATFORM
               value: 'GKE'
