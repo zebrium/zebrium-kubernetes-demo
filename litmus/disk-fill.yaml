@@ -29,8 +29,8 @@ spec:
             # specify the fill percentage according to the disk pressure required
             - name: FILL_PERCENTAGE
               value: "120"
-            # 5 minute duration in ms
+            # 5 minute duration in seconds
             - name: TOTAL_CHAOS_DURATION
-              value: "5000"
+              value: "300"
             - name: DEFAULT_GATHERING
               value: "explicit"
