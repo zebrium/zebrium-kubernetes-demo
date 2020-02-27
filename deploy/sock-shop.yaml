@@ -742,4 +742,4 @@ spec:
       containers:
         - name: user-load
           image: weaveworksdemos/load-test
-          args: ["-h", "front-end:80", "-r", "1000"]
+          args: ["-h", "front-end:80", "-r", "9999999"]
