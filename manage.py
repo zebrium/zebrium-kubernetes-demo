@@ -65,12 +65,13 @@ def start(args):
 
     # Deploy Zebrium Collector using Helm
     ze_deployment_name = "zebrium-k8s-demo"
-    ze_api_url = "https://zapi03.zebrium.com"
+    ze_logs_url = "https://zapi03.zebrium.com"
+    ze_stats_url = "https://zapi03.zebrium.com/stats/api/v1/zstats"
     run_shell("sleep 90") # Wait 1.5 mins for cluster to finish setting up fully
     run_shell("kubectl create namespace zebrium")
-    run_shell(f"helm install zlog-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl={ze_api_url},zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-kubernetes-collector/master/charts zlog-collector")
+    run_shell(f"helm install zlog-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl={ze_logs_url},zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-kubernetes-collector/master/charts zlog-collector")
     # Install Prometheus collector (EXPERIMENTAL)
-    run_shell(f"helm install zstats-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl=https://zapi03.zebrium.com/stats/api/v1/zstats,zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-stats/master/charts zstats")
+    run_shell(f"helm install zstats-collector --namespace zebrium --set zebrium.deployment={ze_deployment_name},zebrium.collectorUrl={ze_stats_url},zebrium.authToken={args.key} --repo https://raw.githubusercontent.com/zebrium/ze-stats/master/charts zstats")
 
     # Deploy all demo apps
     run_shell("kubectl create -f ./deploy/sock-shop.yaml")
