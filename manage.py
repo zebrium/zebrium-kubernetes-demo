@@ -113,8 +113,16 @@ def start(args):
         print_color("Ingress still being setup. Use the following command to get the IP later:", bcolors.WARNING)
         print_color("\tkubectl get ingress basic-ingress --namespace=sock-shop", bcolors.WARNING)
 
-    print_color(f"\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Finished creating cluster. Please wait at least 15 minutes for environment to become fully initalised.", bcolors.WARNING)
-    print_color(f"The ingress to access the web application from your browser can take at least 5 minutes to create.\n\n",bcolors.WARNING)
+    print_color("***************************************************************************************************", bcolors.WARNING)
+    print_color(f"* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Finished creating cluster.", bcolors.WARNING)
+    print_color("* Please wait at least 15 minutes for environment to become fully initalised.")
+    print_color("* The ingress to access the web application from your browser can take at least 5 minutes to create.", bcolors.WARNING)
+    print_color("*", bcolors.WARNING)
+    print_color("*", bcolors.WARNING)
+    print_color("* IMPORTANT: To reliably detect Chaos experiment incidents you must reduce the Refactoring Period For Your Account to 10 minutes.", bcolors.WARNING)
+    print_color("* You can do this under your account settings at https://portal03.zebrium.com/settings.",bcolors.WARNING)
+    print_color("*", bcolors.WARNING)
+    print_color("***************************************************************************************************\n\n", bcolors.WARNING)
 
 def stop(args):
     """
@@ -146,9 +154,9 @@ def run_experiment(experiment: str, delay: int = 0):
     :param ramp_time:   The number of seconds to delay experiment after setup to avoid confusing setup events with experiment events in Zebrium
     :return:            ExperimentResult object with results of experiment
     """
-    print_color(f"***************************************************************************************************", bcolors.OKBLUE)
+    print_color("***************************************************************************************************", bcolors.OKBLUE)
     print_color(f"* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Experiment: {experiment}", bcolors.OKBLUE)
-    print_color(f"***************************************************************************************************", bcolors.OKBLUE)
+    print_color("***************************************************************************************************", bcolors.OKBLUE)
 
     experiment_file = experiment + ".yaml"
 
