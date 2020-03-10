@@ -108,7 +108,7 @@ def start(args):
         ingress_ip = \
         json.loads(os.popen('kubectl get ingress basic-ingress --namespace=sock-shop -o json').read())["status"][
             "loadBalancer"]["ingress"][0]["ip"]
-        print_color(f"\nYou can access the web application in a few minutes at: http://{ingress_ip}")
+        print_color(f"\nYou can access the web application in a few minutes at: http://{ingress_ip}\n\n")
     except:
         print_color("Ingress still being setup. Use the following command to get the IP later:", bcolors.WARNING)
         print_color("\tkubectl get ingress basic-ingress --namespace=sock-shop", bcolors.WARNING)
@@ -119,8 +119,8 @@ def start(args):
     print_color("* The ingress to access the web application from your browser can take at least 5 minutes to create.", bcolors.WARNING)
     print_color("*", bcolors.WARNING)
     print_color("*", bcolors.WARNING)
-    print_color("* IMPORTANT: To reliably detect Chaos experiment incidents you must reduce the Refactoring Period For Your Account to 10 minutes.", bcolors.WARNING)
-    print_color("* You can do this under your account settings at https://portal03.zebrium.com/settings.",bcolors.WARNING)
+    print_color("* IMPORTANT: To reliably detect Chaos experiment incidents you must reduce the Refractory Period for your account to 10 minutes.", bcolors.WARNING)
+    print_color("* You can do this under your Advanced account settings at https://portal03.zebrium.com/Settings/advanced.",bcolors.WARNING)
     print_color("*", bcolors.WARNING)
     print_color("***************************************************************************************************\n\n", bcolors.WARNING)
 
