@@ -1,6 +1,9 @@
 # Zebrium Kubernetes Demo Environment
 
-The purpose of this repository is to make it easy to spin up a fully deployed [GKE](https://cloud.google.com/kubernetes-engine/) cluster with a microservice application 
+The purpose of this repository is to run a Kubernetes cluster with a Chaos Engine running experiments against services deployed in the cluster
+to validate the detection of incidents in an Autonomous Monitoring solution.
+
+It makes it easy to spin up a fully deployed [GKE](https://cloud.google.com/kubernetes-engine/) cluster with a microservice application 
 [Sock Shop](https://github.com/microservices-demo/microservices-demo), Kafka and 
 [Litmus Chaos Engine](https://litmuschaos.io/) to create incident scenarios for testing [Zebrium's](https://www.zebrium?utm_campaign=Sign-up&utm_source=github) 
 [Autonomous Monitoring Tool](https://www.zebrium.com/blog/the-future-of-monitoring-is-autonomous?utm_campaign=Sign-up&utm_source=github).
@@ -28,9 +31,10 @@ It currently only works with GKE so you will need a Google Cloud account to run 
 1. Kubectl installed locally: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 1. Helm installed locally: https://helm.sh/docs/intro/install/
 
-**_IMPORTANT: Before running the Chaos Experiments you will also need to adjust the Refactory Period in your Advanced Account Settings
+**_IMPORTANT: Before running the Chaos Experiments you will also need to adjust the Refractory Period in your Advanced Account Settings
 to 10 minutes. This is because the experiments run close together in succession which is not how real world incidents occur and stops multiple experiments
-being grouped into one incident in Zebrium. You can adjust it at [https://portal03.zebrium.com/Settings/advanced](https://portal03.zebrium.com/Settings/advanced)._**
+being grouped into one incident in Zebrium. You can adjust it at [https://portal03.zebrium.com/Settings/advanced](https://portal03.zebrium.com/Settings/advanced)
+as soon as the cluster has been started and some data has been ingested._**
 
 ## Usage
 
