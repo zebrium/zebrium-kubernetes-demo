@@ -28,6 +28,10 @@ It currently only works with GKE so you will need a Google Cloud account to run 
 1. Kubectl installed locally: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 1. Helm installed locally: https://helm.sh/docs/intro/install/
 
+**_IMPORTANT: Before running the Chaos Experiments you will also need to adjust the Refactory Period in your Advanced Account Settings
+to 10 minutes. This is because the experiments run close together in succession which is not how real world incidents occur and stops multiple experiments
+being grouped into one incident in Zebrium. You can adjust it at [https://portal03.zebrium.com/Settings/advanced](https://portal03.zebrium.com/Settings/advanced)._**
+
 ## Usage
 
 To see full command line options use the `-h` flag:
