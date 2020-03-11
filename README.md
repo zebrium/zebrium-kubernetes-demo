@@ -1,7 +1,7 @@
 # Zebrium Kubernetes Demo Environment
 
-The purpose of this repository is to run a Kubernetes cluster with a Chaos Engine running experiments against services deployed in the cluster
-to validate the detection of incidents in an Autonomous Monitoring solution.
+The purpose of this repository is to build a realistic app environment running multiple services on a Kubernetes cluster. And then run a series of chaos experiments to see if an Autonomous Monitoring solution (without any pre-configuration) can automatically 
+detect any incidents caused by the chaos experiments.
 
 It makes it easy to spin up a fully deployed [GKE](https://cloud.google.com/kubernetes-engine/) cluster with a microservice application 
 [Sock Shop](https://github.com/microservices-demo/microservices-demo), Kafka and 
