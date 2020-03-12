@@ -5,7 +5,7 @@ detect any incidents caused by the chaos experiments.
 
 It makes it easy to spin up a fully deployed [GKE](https://cloud.google.com/kubernetes-engine/) cluster with a microservice application 
 [Sock Shop](https://github.com/microservices-demo/microservices-demo), Kafka and 
-[Litmus Chaos Engine](https://litmuschaos.io/) to create incident scenarios for testing [Zebrium's](https://www.zebrium?utm_campaign=Sign-up&utm_source=github) 
+[Litmus Chaos Engine](https://litmuschaos.io/) to create incident scenarios for testing [Zebrium's](https://www.zebrium.com?utm_campaign=Sign-up&utm_source=github) 
 [Autonomous Monitoring Tool](https://www.zebrium.com/blog/the-future-of-monitoring-is-autonomous?utm_campaign=Sign-up&utm_source=github).
 
 For more background, please read [Using Autonomous Monitoring with Litmus Chaos Engine on Kubernetes](https://www.zebrium.com/blog/using-autonomous-monitoring-with-litmus-chaos-engine-on-kubernetes?utm_campaign=Chaos&utm_source=chaos&utm_medium=github).
