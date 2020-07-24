@@ -85,14 +85,14 @@ def start(args):
     run_shell('kubectl annotate sts/kafka-cluster-cp-kafka litmuschaos.io/chaos="true" -n kafka')
 
     # Deploy Litmus ChaosOperator to run Experiments that create incidents
-    run_shell("kubectl apply -f https://litmuschaos.github.io/pages/litmus-operator-v1.1.0.yaml")
+    run_shell("kubectl apply -f https://litmuschaos.github.io/litmus/litmus-operator-v1.6.1.yaml")
 
     # Install Litmus Experiments - TEMP Workaround to set experiment versions until Chaos Hub supports in URL
-    run_shell("curl -sL https://github.com/litmuschaos/chaos-charts/archive/1.1.1.tar.gz -o litmus.tar.gz")
+    run_shell("curl -sL https://github.com/litmuschaos/chaos-charts/archive/1.6.1.tar.gz -o litmus.tar.gz")
     run_shell("tar -zxvf litmus.tar.gz")
     run_shell("rm litmus.tar.gz")
-    run_shell("find chaos-charts-1.1.1 -name experiments.yaml | grep generic | xargs kubectl apply -n sock-shop -f")
-    run_shell("find chaos-charts-1.1.1 -name experiments.yaml | grep kafka | xargs kubectl apply -n kafka -f")
+    run_shell("find chaos-charts-1.6.1 -name experiments.yaml | grep generic | xargs kubectl apply -n sock-shop -f")
+    run_shell("find chaos-charts-1.6.1 -name experiments.yaml | grep kafka | xargs kubectl apply -n kafka -f")
     #run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n sock-shop")
     #run_shell("kubectl create -f https://hub.litmuschaos.io/api/chaos?file=charts/kafka/experiments.yaml -n kafka")
 
